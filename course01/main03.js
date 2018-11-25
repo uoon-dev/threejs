@@ -49,24 +49,43 @@ const initOctahedron = () => {
 }
 
 const drawLine = (position) => {
-  material2 = new THREE.PointsMaterial({
+  // material2 = new THREE.PointsMaterial({
+  //   color: 0xFF3030,
+  //   size: 0.2
+  // });
+  material2 = new THREE.LineBasicMaterial({
     color: 0xFF3030,
-    size: 0.2
+    lineWidth: 100
   });
   geometry2 = new THREE.Geometry();
-  geometry2.vertices.push(
-    new THREE.Vector3( 
-      0, 
-      0, 
-      0) 
-  );
-  geometry2.vertices.push(
-    new THREE.Vector3( 
-      1, 
-      1, 
-      0) 
-  );
-  line = new THREE.Line(geometry2, material);
+  if (!line) {
+    geometry2.vertices.push(
+      new THREE.Vector3( 
+        0, 
+        0, 
+        0) 
+    );
+    geometry2.vertices.push(
+      new THREE.Vector3( 
+        1, 
+        1, 
+        0) 
+    );
+  } else {
+    geometry2.vertices.push(
+      new THREE.Vector3( 
+        line.geometry.vertices[1].x, 
+        line.geometry.vertices[1].y, 
+        0)
+    );
+    geometry2.vertices.push(
+      new THREE.Vector3( 
+        line.geometry.vertices[1].x + 1, 
+        line.geometry.vertices[1].y + 1, 
+        0) 
+    );
+  }
+  line = new THREE.Line(geometry2, material2);
   // line.geometry.vertices[0].x = position.x / 10;
   // line.geometry.vertices[0].y = position.y / 10;
   // line.geometry.vertices[1].x = position.x / 11;
@@ -96,10 +115,12 @@ const update = () => {
   if (octahedron.position.x >= xWall ||
     octahedron.position.x <= -xWall) {
     xMove = -1 * xMove;
+    drawLine();
   }
   if (octahedron.position.y >= yWall ||
     octahedron.position.y <= -yWall) {
     yMove = -1 * yMove;
+    drawLine();
   }
   renderer.render(scene, camera);
   requestAnimationFrame(update);
