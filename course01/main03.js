@@ -1,22 +1,19 @@
 const WIDTH = 800;
 const HEIGHT = 800;
+const xWall = WIDTH / 15;
+const yWall = HEIGHT / 17;
 const FIELD_OF_VIEW = 20;
 const ASPECT = WIDTH / HEIGHT;
 const NEAR = 0.1;
 const FAR = 10000;
-const RADIUS = 10;
+const RADIUS = 1;
 const scene = new THREE.Scene();
-const renderer= new THREE.WebGLRenderer({
+const renderer = new THREE.WebGLRenderer({
   alpha: true,
   antialias: true
 });
-const camera = new THREE.PerspectiveCamera(
-  FIELD_OF_VIEW, 
-  ASPECT, 
-  NEAR, 
-  FAR
-)
-const pointLight = new THREE.PointLight(0xFFFFFF, 0.5);
+const camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW, ASPECT, NEAR, FAR);
+const pointLight = new THREE.PointLight(0xffffff, 0.5);
 pointLight.position.x = 100;
 pointLight.position.y = 100;
 pointLight.position.z = 30;
@@ -27,107 +24,89 @@ let geometry;
 let geometry2;
 let material;
 let material2;
-let octahedron;
+let ball;
 let line;
 let point;
-
+let spheres = [];
+let planeGeometry;
+let planeTexture;
+let planeMaterial;
+let plane;
 
 const init = () => {
   scene.add(pointLight);
   renderer.setSize(WIDTH, HEIGHT);
   document.body.appendChild(renderer.domElement);
-}
+};
+
+const drawLine = () => {
+  material2 = new THREE.LineBasicMaterial({
+    color: 0xff3030
+  });
+  geometry2 = new THREE.SphereGeometry(0.2, 10, 10);
+
+  for (let i = 0; i < 30; i++) {
+    spheres.push(new THREE.Mesh(geometry2, material2));
+  }
+  //line = new THREE.Mesh(geometry2, material2);
+  //scene.add(line);
+};
 
 const initOctahedron = () => {
-  geometry = new THREE.OctahedronGeometry(RADIUS, 0);
-  material = new THREE.MeshLambertMaterial({ color: 0xFF3030 });
-  octahedron = new THREE.Mesh(geometry, material);
-  
-  scene.add(octahedron);
-  octahedron.position.z = -40 * 10;
-  update();
-}
+  geometry = new THREE.SphereGeometry(RADIUS, 32, 32);
+  texture = new THREE.TextureLoader().load("./ball.jpg");
+  material = new THREE.MeshBasicMaterial({ map: texture });
+  ball = new THREE.Mesh(geometry, material);
 
-const drawLine = (position) => {
-  // material2 = new THREE.PointsMaterial({
-  //   color: 0xFF3030,
-  //   size: 0.2
-  // });
-  material2 = new THREE.LineBasicMaterial({
-    color: 0xFF3030,
-    lineWidth: 100
+  scene.add(ball);
+  ball.position.z = -400;
+
+  planeGeometry = new THREE.PlaneGeometry(xWall * 2, yWall * 2, 32);
+  planeTexture = new THREE.TextureLoader().load("./grass.jpg");
+  planeMaterial = new THREE.MeshBasicMaterial({
+    // map: planeTexture,
+    color: 0x444,
+    side: THREE.DoubleSize
   });
-  geometry2 = new THREE.Geometry();
-  if (!line) {
-    geometry2.vertices.push(
-      new THREE.Vector3( 
-        0, 
-        0, 
-        0) 
-    );
-    geometry2.vertices.push(
-      new THREE.Vector3( 
-        1, 
-        1, 
-        0) 
-    );
-  } else {
-    geometry2.vertices.push(
-      new THREE.Vector3( 
-        line.geometry.vertices[1].x, 
-        line.geometry.vertices[1].y, 
-        0)
-    );
-    geometry2.vertices.push(
-      new THREE.Vector3( 
-        line.geometry.vertices[1].x + 1, 
-        line.geometry.vertices[1].y + 1, 
-        0) 
-    );
-  }
-  line = new THREE.Line(geometry2, material2);
-  // line.geometry.vertices[0].x = position.x / 10;
-  // line.geometry.vertices[0].y = position.y / 10;
-  // line.geometry.vertices[1].x = position.x / 11;
-  // line.geometry.vertices[1].y = position.y / 11;
-  line.position.z = -2500;
-  scene.add(line);
-  // update();
-}
+  plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  plane.position.z = -400;
+  scene.add(plane);
+  drawLine();
+  update();
+};
+
+const updateLine = () => {
+  var sphere = spheres.shift();
+  scene.remove(sphere);
+  spheres.push(sphere);
+  sphere.position.copy(ball.position);
+  scene.add(sphere);
+};
 
 const update = () => {
   const speed = Math.random() / 20;
-  const xWall = WIDTH / 15;
-  const yWall = HEIGHT / 17;
-  octahedron.rotation.x += speed;
-  octahedron.rotation.y += speed;
-  octahedron.rotation.z += speed;
-  octahedron.position.x += xMove / 3;
-  octahedron.position.y += yMove / 3;
-  octahedron.position.z += yMove / 3;
+  ball.rotation.x += speed;
+  ball.rotation.y += speed;
+  ball.rotation.z += speed;
+  ball.position.x += xMove / 2;
+  ball.position.y += yMove / 2;
+  // octahedron.position.z += yMove / 2;
 
-  // line.geometry.vertices[1].x += xMove * 5;
-  // line.geometry.vertices[1].y += yMove * 5;
-  line.geometry.vertices[1].x += xMove * 2;
-  line.geometry.vertices[1].y += yMove * 2;
-  line.geometry.verticesNeedUpdate = true;
-
-  if (octahedron.position.x >= xWall ||
-    octahedron.position.x <= -xWall) {
+  if (ball.position.x >= xWall - RADIUS || ball.position.x <= -xWall + RADIUS) {
     xMove = -1 * xMove;
-    drawLine();
+    //drawLine();
   }
-  if (octahedron.position.y >= yWall ||
-    octahedron.position.y <= -yWall) {
+  if (ball.position.y >= yWall - RADIUS || ball.position.y <= -yWall + RADIUS) {
     yMove = -1 * yMove;
-    drawLine();
+    //drawLine();
   }
+  updateLine();
   renderer.render(scene, camera);
   requestAnimationFrame(update);
-}
+};
 
 window.onload = () => {
   init();
   drawLine();
   initOctahedron();
-}
+};
