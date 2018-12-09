@@ -13,7 +13,7 @@ let material;
 let renderer;
 let octahedron;
 let pointLight;
-let model;
+let house;
 
 
 window.onload = () => {
@@ -21,10 +21,10 @@ window.onload = () => {
 }
 
 function update() {
-  if (model) {
-    controls.target = model.position;
+  if (house) {
+    controls.target = house.position;
     controls.update();
-    camera.lookAt(model.position);
+    camera.lookAt(house.position);
   }
   renderer.render(scene, camera);
   requestAnimationFrame(update);
@@ -40,22 +40,33 @@ const drawGrid = () => {
   scene.add(gridHelper);
 }
 
-const drawModel = () => {
-  const mtlLoader = new THREE.MTLLoader();
-  mtlLoader.setPath('../three.js/examples/models/obj/male02/')
-    .load('male02_dds.mtl', function (materials) {
-      materials.preload();
-      const loader = new THREE.OBJLoader2();
-      loader.setMaterials(materials);
-      loader.setPath('../three.js/examples/models/obj/male02/')
-      loader.load('male02.obj', (event) => {
-        model = event.detail.loaderRootNode;
-        model.position.z = 800;
-        model.position.x = 350;
-        // model.rotateY(-Math.PI / 2.);
-        scene.add(model);
-      }, null, null, null, false)
-    });
+const drawHouse = () => {
+  // const mtlLoader = new THREE.MTLLoader();
+  // mtlLoader.setPath('obj/')
+  //   .load('Calisma2.mtl', function (materials) {
+  // materials.preload();
+  // const loader = new THREE.OBJLoader();
+  // loader.setMaterials(materials);
+  // loader.setPath('obj/')
+  //   loader.load('Calisma2.obj', (event) => {
+  //     house = event;
+  //     // house = event.detail.loaderRootNode;
+  //     house.position.z = 800;
+  //     house.position.x = 350;
+  //     // house.rotateY(-Math.PI / 2.);
+  //     scene.add(house);
+  //   }, null, null, null, false)
+  // });
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.load("obj/Calisma2.mtl", function (materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.load("obj/Calisma2.obj", function (object) {
+      house = object;
+      scene.add(object);
+    }, null, null);
+  });
 }
 
 function init() {
@@ -77,16 +88,17 @@ function init() {
   camera.position.y = 1000;
 
   controls = new THREE.OrbitControls(camera);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambientLight);
+  // pointLight = new THREE.PointLight(0xFFFFFF, 0.5);
+  // pointLight.position.x = 1000;
+  // pointLight.position.y = 1000;
+  // pointLight.position.z = 30;
 
-  pointLight = new THREE.PointLight(0xFFFFFF, 0.5);
-  pointLight.position.x = 1000;
-  pointLight.position.y = 1000;
-  pointLight.position.z = 30;
-
-  scene.add(pointLight);
+  // scene.add(pointLight);
   ////////
 
-  drawModel();
+  drawHouse();
   drawGrid();
 
   // const material = new THREE.MeshLambertMaterial({ color: 0xFF3030 });
