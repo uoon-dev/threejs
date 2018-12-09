@@ -13,7 +13,7 @@ let material;
 let renderer;
 let octahedron;
 let pointLight;
-let house;
+let model;
 
 
 window.onload = () => {
@@ -21,10 +21,10 @@ window.onload = () => {
 }
 
 function update() {
-  if (house) {
-    controls.target = house.position;
+  if (model) {
+    controls.target = model.position;
     controls.update();
-    camera.lookAt(house.position);
+    camera.lookAt(model.position);
   }
   renderer.render(scene, camera);
   requestAnimationFrame(update);
@@ -40,22 +40,22 @@ const drawGrid = () => {
   scene.add(gridHelper);
 }
 
-const drawHouse = () => {
+const drawModel = () => {
   const mtlLoader = new THREE.MTLLoader();
-  mtlLoader.setPath('city/');
-  mtlLoader.load('city.mtl', function (materials) {
-    materials.preload();
-    const loader = new THREE.OBJLoader2();
-    // loader.setMaterials(materials);
-    // load a resource from provided URL synchronously
-    loader.load('city/city.obj', (event) => {
-      house = event.detail.loaderRootNode;
-      house.position.z = 800;
-      house.position.x = 350;
-      // house.rotateY(-Math.PI / 2.);
-      scene.add(house);
-    }, null, null, null, false)
-  });
+  mtlLoader.setPath('../three.js/examples/models/obj/male02/')
+    .load('male02_dds.mtl', function (materials) {
+      materials.preload();
+      const loader = new THREE.OBJLoader2();
+      loader.setMaterials(materials);
+      loader.setPath('../three.js/examples/models/obj/male02/')
+      loader.load('male02.obj', (event) => {
+        model = event.detail.loaderRootNode;
+        model.position.z = 800;
+        model.position.x = 350;
+        // model.rotateY(-Math.PI / 2.);
+        scene.add(model);
+      }, null, null, null, false)
+    });
 }
 
 function init() {
@@ -73,8 +73,8 @@ function init() {
     FAR
   )
 
-  camera.position.z = -100;
-  camera.position.y = 8000;
+  // camera.position.z = -100;
+  camera.position.y = 1000;
 
   controls = new THREE.OrbitControls(camera);
 
@@ -86,7 +86,7 @@ function init() {
   scene.add(pointLight);
   ////////
 
-  drawHouse();
+  drawModel();
   drawGrid();
 
   // const material = new THREE.MeshLambertMaterial({ color: 0xFF3030 });
